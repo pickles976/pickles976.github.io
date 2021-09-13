@@ -11503,8 +11503,8 @@ html {
 
 .background{
   width: 100vw; 
-  height: auto;
-  min-height: 4000;
+  height: 100vh;
+  min-height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
@@ -11516,6 +11516,6 @@ html {
 }
 
 .wrapper{
-  position: absolute;
+  position: relative;
   height: 100vh;
 }
