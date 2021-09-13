@@ -11511,7 +11511,7 @@ html {
   z-index: -100;
   margin:0;
   padding:0;
-  display:inline-block;
+  display:block;
 }
 
 #wrapper{
