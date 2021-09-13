@@ -11515,7 +11515,7 @@ html {
   color: red;
 }
 
-#wrapper{
+.wrapper{
   position: relative;
   height: 100vh;
 }
