@@ -11504,7 +11504,6 @@ html {
 .background{
   width: 100vw; 
   height: 3000px;
-  min-height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
@@ -11517,5 +11516,5 @@ html {
 
 .wrapper{
   position: relative;
-  height: 100vh;
+  height: 3000px;
 }
