@@ -11505,7 +11505,7 @@ html {
   width: 100vw; 
   height: auto;
   min-height: 100vh;
-  position: static;
+  position: absolute;
   top: 0;
   left: 0;
   z-index: -100;
