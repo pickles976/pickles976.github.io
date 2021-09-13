@@ -11504,7 +11504,7 @@ html {
 .background{
   width: 100vw; 
   height: auto;
-  min-height: 100vh;
+  min-height: 4000;
   position: absolute;
   top: 0;
   left: 0;
