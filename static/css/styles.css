@@ -11503,7 +11503,7 @@ html {
 
 .background{
   width: 100vw; 
-  height: 100vh;
+  height: 1000;
   position: absolute;
   top: 0;
   left: 0;
