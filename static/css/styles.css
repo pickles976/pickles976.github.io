@@ -11495,3 +11495,19 @@ html {
 .copyright {
   background-color: #1a252f;
 }
+
+.content{
+  position: relative;
+  z-index: 100;
+}
+
+.background{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -100;
+}
+
+#wrapper{
+  position: relative;
+}
