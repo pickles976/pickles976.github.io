@@ -9,6 +9,10 @@
 
 window.addEventListener('DOMContentLoaded', event => {
 
+    document.getElementById("wrapper").style.height = document.height;
+    document.getElementById("boids").style.height = document.height;
+    document.getElementById("back").style.height = document.height;
+
     // Navbar shrink function
     var navbarShrink = function () {
         const navbarCollapsible = document.body.querySelector('#mainNav');
@@ -52,6 +56,3 @@ window.addEventListener('DOMContentLoaded', event => {
     });
 
 });
-
-document.getElementById("wrapper").style.height = document.height;
-document.getElementById("boids").style.height = document.height;
