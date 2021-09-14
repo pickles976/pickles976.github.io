@@ -11517,4 +11517,6 @@ html {
 .wrapper{
   position: relative;
   height: 2400px;
+  overflow: hidden;
+  width: 100%;
 }
