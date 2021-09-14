@@ -54,5 +54,4 @@ window.addEventListener('DOMContentLoaded', event => {
 });
 
 document.getElementById("wrapper").style.height = document.height;
-document.getElementById("back").style.height = document.height;
 document.getElementById("boids").style.height = document.height;
