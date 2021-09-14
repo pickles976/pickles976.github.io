@@ -11512,6 +11512,7 @@ html {
   padding:0;
   display:block;
   color: red;
+  overflow: hidden;
 }
 
 .wrapper{
