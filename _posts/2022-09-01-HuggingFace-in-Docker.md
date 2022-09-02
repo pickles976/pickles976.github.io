@@ -3,6 +3,8 @@ layout: post
 title: Running HuggingFace Transformers in a Docker container
 ---
 
+![](https://www.docker.com/wp-content/uploads/2020/12/Whale-Logo332_5.png)
+
 When I was working on a [project to try generating NES music with Huggingface transformers](https://www.youtube.com/watch?v=7pEvu_nC2LQ&ab_channel=Seabass), I was surprised by how little resources there were on making a compatible Docker image.  
 
 Maybe it's because it's pretty standard practice to train toy models in Google colab, but what if I want to do inference with my trained model in some sort of server, in this case Flask?  
@@ -11,6 +13,7 @@ It turns out that setting up Docker with Python and CUDA enabled is pretty easy.
 
 In your Dockerfile:  
 
+```Dockerfile
 FROM nvidia/cuda:11.6.0-runtime-ubuntu20.04
 
 RUN apt-get update
@@ -22,9 +25,11 @@ EXPOSE 5000
 COPY ./requirements.txt ./requirements.txt
 
 CMD ["your", "commands", "here"]
+```
 
 In your docker-compose.yaml:  
 
+```yaml
 version: "3.8"  # optional since v1.27.0
 services:
 web:
@@ -39,6 +44,7 @@ web:
             - driver: nvidia
             count: 1
             capabilities: [gpu]
+```
 
 Yes it's literally that easy. This setup should work for any models using transformers.py >= 4.5.1 or torch >= 1.6.0  
 
