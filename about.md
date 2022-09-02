@@ -4,12 +4,12 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+Aspiring dev, don't really know anything yet.
 
 ### More Information
 
-A place to include any other types of information that you'd like to include about yourself.
+https://ai-arena.com
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[sebaslogo@gmail.com](mailto:sebaslogo@gmail.com)
