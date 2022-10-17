@@ -19,7 +19,54 @@ To prevent the user from setting their ship's health to infinity, we can wrap th
 
 If an object has nested objects, like a position or velocity vector, then we set a trap for "get". When get is called for a field in this "graylist", we instead return a deep copy of the object.  
 
-I used a "blacklist" and "graylist" so that anything not explicitly outlined (i.e. user-created fields), would be fair game to read. Imagine writing your AI to check the memory of all enemy ships and see if any of their fields matched the ID of a resource-rich asteroid. You could infer that their ship was heading to the asteroid, and you could fire a missile to destroy it and waste their time. Or you could figure out which of your ships was being targeted by an enemy ship, and return fire.
+Here is the proxy for gameObjects that dont belong to the player (anything that isn't their ships or home base)
+
+```javascript
+const createGameObjectProxy = (gameObject : GameObject) => {
+
+    const grayList = ["transform","collider","resources"]
+
+    const blackList = ["spawnShip", "upgradeInteractRadius", "upgradeHealRate",
+    "upgradeMaxEnergy", "update", "start", "serialize", "queueShip", "trySpawnShip", "takeResources",
+    "healShip", "destroy", "render", "collide", "simulate", "shipQueue", "moveTo",
+    "seekTarget", "upgradeDamage", "shoot", "applyThrust", "breakup", "totalMass",
+    "getResources", "toString", "colors"]
+
+    const gameObjectHandler : ProxyHandler<GameObject> = {
+
+        get : (target : GameObject, prop : string) => {
+
+            const field = Reflect.get(target,prop)
+
+            if (grayList.includes(prop)){
+                return Serializer.deserialize(field.serialize())
+            }
+            else if (!blackList.includes(prop))
+            {
+                return field
+            }
+                
+            return null
+
+        },
+        set : (target, prop : string, value, receiver) => {
+            return false
+        },
+        deleteProperty : (target, prop : string) => {
+            return false
+        },
+        defineProperty : (target,prop : string, attributes) => {
+            return false
+        }
+
+    }
+
+    return new Proxy(gameObject,gameObjectHandler)
+
+}
+```
+
+I used a "blacklist" (I prefer the terms allowlist and denylist but using colors makes the graylist concept easier to understand in my opinion) and "graylist" so that anything not explicitly outlined (i.e. user-created fields), would be fair game to read. Imagine writing your AI to check the memory of all enemy ships and see if any of their fields matched the ID of a resource-rich asteroid. You could infer that their ship was heading to the asteroid, and you could fire a missile to destroy it and waste their time. Or you could figure out which of your ships was being targeted by an enemy ship, and return fire.
 
 The [proxy class](https://github.com/pickles976/ai-arena/blob/main/src/objectProxies.ts)
 
@@ -32,10 +79,10 @@ The other option is to insert breakpoints into user code. This incurs some overh
 Preventing memory bombs is very straightforward, the object is stringified and encoded as text. Each char is a byte. I allow users to allocate 8kb of memory, more than enough.
 
 ```Javascript
-    const size = new TextEncoder().encode(JSON.stringify(obj)).length
-    const kiloBytes = size / 1024;
+const size = new TextEncoder().encode(JSON.stringify(obj)).length
+const kiloBytes = size / 1024;
 ```
 
 Lastly, to prevent users from submitting shoddy code and losing matches via timeout, we only want to submit user code that has been proven to be performant. For this I just made a Lambda function that runs 30 timesteps of the game and will exit if the user code ever times out. Unfortunately the Lambda instances have varying performance, so the timeout threshold is significantly higher in the Lambda than in the tournament server. This could lead to users being greenlit by the lambda, but losing by timeout in actual online matches.  
 
-Since I am a js and software noob in general, I fully expect there to be holes in my implementation. If anyone sees immediate issues please feel free to email me at sebaslogo@gmail.com
+Since I am a js and software noob in general, I fully expect there to be holes in my implementation. If you have any suggestions, please reach out at my email!
