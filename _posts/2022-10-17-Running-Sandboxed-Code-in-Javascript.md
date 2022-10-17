@@ -12,7 +12,7 @@ For my website [ai-arena](https://www.ai-arena.com), I needed to run arbitrary c
 - Users cannot modify the game except through API exposed to them
 - Users may not access the DOM, Ajax, or any globals from either the browser or node environment (no access to Process, etc)
 - User code needs to run in realtime. This means no use of an in-javascript [interpreter](https://github.com/NeilFraser/JS-Interpreter)
-- User code needs to execute within a single game loop running at 60fps minimum. (no [worker threads](https://nodejs.org/api/worker_threads.html), too slow.
+- User code needs to execute within a single game loop running at 60fps minimum. (no [worker threads](https://nodejs.org/api/worker_threads.html), too slow.)
 - User code needs to safely exit if it takes too long to run or takes up too much memory.
 - User code needs to have all exceptions handled to prevent crashing the server.
 
