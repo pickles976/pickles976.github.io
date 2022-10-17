@@ -7,6 +7,15 @@ title: Safely Evaluating Arbitrary User Code in Javascript
 
 For my website [ai-arena](https://www.ai-arena.com), I needed to run arbitrary code from users on both the front-end and the back-end. The game is a strategy game where ships compete to gather resources and destroy each other's base. Users write the code that controls the AI of their team. 
 
+## Constraints
+
+- Users cannot modify the game except through API exposed to them
+- Users may not access the DOM, Ajax, or any globals from either the browser or node environment (no access to Process, etc)
+- User code needs to run in realtime. This means no use of an in-javascript [interpreter](https://github.com/NeilFraser/JS-Interpreter)
+- User code needs to execute within a single game loop running at 60fps minimum. (no [worker threads](https://nodejs.org/api/worker_threads.html), too slow.
+- User code needs to safely exit if it takes too long to run or takes up too much memory.
+- User code needs to have all exceptions handled to prevent crashing the server.
+
 ## Front-end sandboxing
 
 On the front-end it's a fairly easy deal. I dont care if the user blows up their own browser. But I don't want the user to be able to manipulate the game or access any globally available information. The best source I could find for sandboxing in the browser was [here](https://blog.risingstack.com/writing-a-javascript-framework-sandboxed-code-evaluation/). I don't fully understand the Javascript-fu being done here, but I understand that by proxying the "has" function of the "with" object prototype, you can hide global scope from the inner function (hooray, metaprogramming!). For those unfamiliar with proxies, they basically allow you to wrap an object and redefine its prototype methods. [A good introduction can be found here](https://javascript.info/proxy).  
@@ -78,7 +87,7 @@ The other option is to insert breakpoints into user code. This incurs some overh
 
 Preventing memory bombs is very straightforward, the object is stringified and encoded as text. Each char is a byte. I allow users to allocate 8kb of memory, more than enough.
 
-```Javascript
+```javascript
 const size = new TextEncoder().encode(JSON.stringify(obj)).length
 const kiloBytes = size / 1024;
 ```
