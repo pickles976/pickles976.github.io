@@ -9,9 +9,12 @@ Over the weekend I decided to do a project in Three.js and host it online once i
 
 [**https://foxholemap3d.app/**](https://foxholemap3d.app/)  
 
-Hosting a static website is something that I do frequently enough to need to know how to do it, but infrequently enough that I don't remember all the steps every time. So I'm deciding to make a post to help myself and others.  
+Hosting a static website with https is something that I do frequently enough to need to know how to do it, but infrequently enough that I don't remember all the steps every time. So I'm deciding to make a post to help myself and others.  
 
-This tutorial assumes that you know a little bit about the AWS console and are using Google domains as your domain name registrar.
+The .app domain only works with https, which means that we'll need to do a few extra steps to let users access our website.  
+
+This tutorial assumes that you know a little bit about the AWS console and are using Google domains as your domain name registrar.  
+
 So without further ado, let's get started!  
 
 ## Create your bucket
