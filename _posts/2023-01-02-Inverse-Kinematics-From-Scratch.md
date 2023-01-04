@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Writing an Inverse Kinematics Solver for Fun
+title: Writing an Inverse Kinematics Solver for Fun (WIP)
 ---
 
 ![](/images/ik_post/pic1.png)
