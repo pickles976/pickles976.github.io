@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Writing an Inverse Kinematics Solver for Fun (WIP)
+title: Writing an Inverse Kinematics Solver for Fun
 ---
 
 ![](/images/ik_post/pic1.png)
@@ -19,7 +19,7 @@ Modern Robotics begins with rigidbody dynamics and Inverse Kinematics. Some of t
 
 ![](/images/ik_post/matrix.webp)
 
-The "r"s in GDB control rotation. X0, Y0, and Z0 control translation. Different matrices control the rotation on different axes:
+The "r"s in GRB control rotation. X0, Y0, and Z0 control translation. Different matrices control the rotation on different axes:
 
 ![](/images/ik_post/rotation.jpg)
 
@@ -46,6 +46,8 @@ We can pad it with the [identity matrix](https://en.wikipedia.org/wiki/Identity_
 ]
 ```
 
+This matrix will translate any other transform matrix by x and y, then rotate it by θ. Try it yourself by hand. Multiply a vector at x = 2, y = 2 with a rotation of 0 degrees by some other transform matrix. Does the resulting vector make sense?
+
 If we have an arm with length "r" that is rotating with an angle of theta, we can represent the coordinate position of the end of the arm (called the "end effector" like this:
 
 ```javascript
@@ -58,18 +60,21 @@ The values of x and y are derived from polar coordinates. x = r * cos(θ), y = r
 
 ```javascript   
 [
+    // pure rotation matrix
     let A = math.matrix([
         [Math.cos(θ), -Math.sin(θ), 0],
         [Math.sin(θ), Math.cos(θ), 0],
         [0, 0, 1]
     ])
 
+    // pure translation matrix
     let B = math.matrix([
         [1, 0, r],
         [0, 1, 0],
         [0, 0, 1]
     ])
 
+    // combine the rotation and translation!
     let C = math.multiply(A, B)
 ]
 ```
@@ -84,7 +89,19 @@ Now that we understand the matrices, let's look at an actual equation for a very
 
 ![](/images/ik_post/arm.webp)
 
-This matrix is actually just a pair of parallel equations. We can use basic algebra and trig to substitute and find out the solutions. This type of arm will typically have 2 solutions for any given end effector position, since the elbow can be bent at a negative or positive angle. But what if we want to solve for a more complicated arm with infinite solutions, or 100 joints? We can no longer solve algebraically in that case. We now have to treat this problem like an optimization problem.
+This matrix is actually just a pair of parallel equations. We can use basic algebra and trig to substitute and find out the solutions. This type of arm will typically have 2 solutions for any given end effector position, since the elbow can be bent at a negative or positive angle. 
+
+Stop and think how many "degrees of freedom" this robot has with respect to its joints-- AKA how many variables are required to represent the state of the arm? Well it can rotate on two axes, so two. The two angles of the two joints. How many DOF does the end-effector have? Well we can represent any point in the plane in either polar (0, r) or cartesian (x, y) coordinates, so two DOF.
+
+Ok quick detour. There is a special matrix called a Jacobian which is just a matrix of partial derivatives. See the df/dx in the image below? Each of those items is basically saying "how much does each output variable change according to a change in some input variable?". In the case of our robot arm, we could say the x coordinate of the end effector changes by some amount if we change the first arm's angle by some value, which would be dx/d01. A lot of Inverse Kinematics solvers use this Jacobian matrix directly. We wont be doing that. If you are interested in learning more, look up "Jacobian Transpose" and "Jacobian Pseudoinverse".
+
+![](/images/ik_post/jacobian.png)
+![](/images/ik_post/jacobian2.png)
+
+If the degrees of freedom of the arm is the same as the degrees of freedom of the end-effector then our Jacobian is square. Square matrices are [invertible](https://en.wikipedia.org/wiki/Invertible_matrix). What this means basically is that you can solve a "non-redundant" inverse kinematics problem analytically. So long as you can calculate that inverse matrix, you can figure out what joint position you need.
+
+
+But what if we want to solve for a more complicated arm with infinite solutions, or 100 joints? The Jacobian becomes a rectangle! We can't invert rectangles! We can no longer solve algebraically in that case. We now have to treat this problem like an optimization problem.
 
 There are lots of ways to solve IK as an optimization problem. [This page](https://motion.cs.illinois.edu/RoboticSystems/Optimization.html) has a lot of really good examples. I initially went with gradient descent.
 
@@ -221,4 +238,4 @@ We create an array of arm segments and update them using a Matrix4 every frame. 
 
 ## Conclusion
 
-You're done! This is probably the most basic solver that you can implement. But from here it's fairly easy to add complexity. You can add joint constraints that prevent joints from bending too far in a given direction. You can add self-intersection constraints using bounding boxes (something I am doing right now) and obstacle avoidance using many different methods, path planning, etc. You can also implement different solvers and try out different optimization algorithms.
+You're done! This is probably the most basic solver that you can implement. But from here it's fairly easy to add complexity. You can add joint constraints that prevent joints from bending too far in a given direction. You can add self-intersection constraints using bounding boxes, and obstacle avoidance using many different methods, path planning, etc. You can also implement different solvers and try out different optimization algorithms.
