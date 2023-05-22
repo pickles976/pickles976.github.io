@@ -53,7 +53,7 @@ Where SQUARE_WIDTH is the measured value from step 2. This gives your camera mat
 
 This is the fun part (depending on your definition of fun). The first step is to print out your fiducial markers. That can be done [here](https://fodi.github.io/arucosheetgen/). I usually go with the Original Aruco dictionary, and print the first 10-20 markers. I have settled on 80mm as the width of the markers. When you cut these out, make sure you leave a decent amount of white space on the edges. That contrast is necessary for good detection.
 
-For placement, you will want to place 2-3 of them in a cluster near each other. You can do localization with just one, but more points is going to give us better position estimates. Make sure that the fiducials are co-planar. When you place these, use a measuring tape. Your hand placement wont be exact (professional setups that do this will use lasers for leveling and measuring distance), you will just need to be accurate to a few mm.
+For placement, you will want to place 2-3 of them in a cluster near each other. You can do localization with just one, but more points is going to give us better position estimates. You can place them mostly however you'd like, but make sure that the fiducials are co-planar. When you place these, use a measuring tape. Your hand placement wont be exact (professional setups that do this will use lasers for leveling and measuring distance), you will just need to be accurate to a few mm.
 
 Here is what my fiducial placement looks like:
 
@@ -69,7 +69,7 @@ The left-most fiducial is at 0,0,1 in my coordinate system. I created a json tha
 }
 ```
 
-This dictionary will be used to generate another dictionary that holds the coordinates of the corners of our fiducials. This representation will not be used directly by the program, but it is easier to read and edit.
+This dictionary will be used to generate another dictionary that holds the coordinates of the corners of our fiducials. This representation will not be used directly by the program, but it is easier to read and edit. I also use feet as the measurement in this dictionary because I use American "freedom units" since that what comes on my tape measurer. It's easy enough to convert to mm.
 
 *Helpful Tip: Pick a coordinate system that matches the coordinate system of your robotics program. ROS uses a right-handed coordinate system with Z-up. This often trips me up because I am used to Unity where Y is up and the coordinate system is left-handed. Picking the wrong coordinate system at the outset can really throw things off. In the above image, Z is up, X is coming out of the wall, and Y is along the wall. It looks like the right-most coordinate system in the image below.*
 
