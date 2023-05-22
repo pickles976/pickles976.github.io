@@ -22,7 +22,7 @@ In this blog post I want to walk you through that whole process. I will gloss ov
 
 The first step is going to be "calibrating the camera". Hopefully this image should clarify the problem a bit:
 
-![](/images/aruco_post/intrinsic_extrinsic.jpg)
+![](/images/aruco_post/intrinsic_extrinsic.png)
 
 The intrinsic parameters are what we aim to find in this step. The extrinsic matrix describes the rotation and translation that converts a 3D point from world coordinates to camera coordinates. The intrinsic matrix describes a transformation from 3D camera coordinates, into 2D coordinates of the image. 
 
@@ -32,21 +32,24 @@ The way to do this is to take a lot of pictures of a 3D object with lots of diff
 
 If that sounds like a lot of unpleasant math, fear not! OpenCV provides an out of the box solution to calibrating the camera. You can follow the steps below fairly mindlessly and get this piece of puzzle done.
 
+#### No-Fear Camera Calibration
 1. Download a calibration image, I use [this one](https://github.com/opencv/opencv/blob/4.x/doc/pattern.png)
 2. Print off your calibration image. The scale of the squares is important, you can measure the size of the squares with a pair of calipers or something. You'll want to know their size very precisely in mm.
 3. Copy the following code from [GeeksForGeeks](https://www.geeksforgeeks.org/camera-calibration-with-python-opencv/#)
-4. Update this line of code:
+4. Update this line of code:  
+```python
     objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2) * SQUARE_WIDTH
+```
 Where SQUARE_WIDTH is the measured value from step 2. This gives your camera matrix a sense of scale. Be aware that all of our measurements are going to be in mm in this tutorial.
 5. Take at least 14 pictures of the checkerboard with the camera you want to calibrate. I usually do about 25.
 6. Run the script on your images. Images with the corners of the checkerboard hilighted will pop up. You want the corner detections to be accurate. You should delete any images that don't have corners detected, or have them detected improperly.
 7. Congratulations! If all things work properly you should see the Camera Matrix and Distortion coefficients. You can save these off to a json and load them later.
 
-Helpful Tip: Take your calibration images at the same aspect ratio and resolution as the images you will take for localization. I ended up burning myself because I was capturing my calibration images for Raspberry Pi camera without using the video port, but then I was using the video port to stream my images during deployment.
+*Helpful Tip: Take your calibration images at the same aspect ratio and resolution as the images you will take for localization. I ended up burning myself because I was capturing my calibration images for Raspberry Pi camera without using the video port, but then I was using the video port to stream my images during deployment.*
 
 ## Placing the Fiducials
 
-This is the fun part (depending on your definition of fun). The first step is to print out your fiducial markers. That can be done [here](https://fodi.github.io/arucosheetgen/) I usually go with the Original Aruco dictionary, and print the first 10-20 markers. I have settled on 80mm as the width of the markers. When you cut these out, make sure you leave a decent amount of white space on the edges. That contrast is necessary for good detection.
+This is the fun part (depending on your definition of fun). The first step is to print out your fiducial markers. That can be done [here](https://fodi.github.io/arucosheetgen/). I usually go with the Original Aruco dictionary, and print the first 10-20 markers. I have settled on 80mm as the width of the markers. When you cut these out, make sure you leave a decent amount of white space on the edges. That contrast is necessary for good detection.
 
 For placement, you will want to place 2-3 of them in a cluster near each other. You can do localization with just one, but more points is going to give us better position estimates. Make sure that the fiducials are co-planar. When you place these, use a measuring tape. Your hand placement wont be exact (professional setups that do this will use lasers for leveling and measuring distance), you will just need to be accurate to a few mm.
 
@@ -54,7 +57,7 @@ Here is what my fiducial placement looks like:
 
 ![](/images/aruco_post/fiducials.jpg)
 
-The center-most fiducial is at 0,0,1 in my coordinate system. I created a json that stores the positions and orientations of all of my fiducials. Here is what it looks like for this image:
+The center-most fiducial is at 0,0,1 in my coordinate system. I created a json that stores the positions and rotations of all of my fiducials. Here is what it looks like for this image:
 
 ```json
 {
@@ -66,7 +69,7 @@ The center-most fiducial is at 0,0,1 in my coordinate system. I created a json t
 
 This dictionary will be used to generate another dictionary that holds the coordinates of the corners of our fiducials. This representation will not be used directly by the program, but it is easier to read and edit.
 
-Helpful Tip: Pick a coordinate system that matches the coordinate system of your robotics program. ROS uses a right-handed coordinate system with Z-up. This often trips me up because I am used to Unity where Y is up and the coordinate system is left-handed. Picking the wrong coordinate system at the outset can really throw things off. In the above image, Z is up, X is coming out of the wall, and Y is along the wall.
+*Helpful Tip: Pick a coordinate system that matches the coordinate system of your robotics program. ROS uses a right-handed coordinate system with Z-up. This often trips me up because I am used to Unity where Y is up and the coordinate system is left-handed. Picking the wrong coordinate system at the outset can really throw things off. In the above image, Z is up, X is coming out of the wall, and Y is along the wall.*
 
 ![](/images/aruco_post/axes.png)
 
@@ -105,7 +108,7 @@ This should output the corner coordinates in a format like this:
 }
 ```
 
-Helpful Tip: The corners of the fiducials are detected with a certain "winding order" so it's important that when you convert your position and orientation of fiducials into corner coordinates, you preserve this winding order. The order is: top left, top right, bottom right, bottom left.
+*Helpful Tip: The corners of the fiducials are detected with a certain "winding order" so it's important that when you convert your position and orientation of fiducials into corner coordinates, you preserve this winding order. The order is: top left, top right, bottom right, bottom left.*
 
 ## Detecting the Fiducials
 
@@ -128,13 +131,13 @@ def findArucoMarkers(self, img, markerSize = 5, totalMarkers=250, draw=True):
 
 This function will return the bounding boxes and ID's of fiducials detected in the images. If draw is set to true, you will see the bounding boxes that are detected. Try taking a picture and running this code on it.
 
-In the next step we will use these bounding boxes to perform pose estimation. Here is a link to the OpenCV docs if you want to read more: https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html
+In the next step we will use these bounding boxes to perform pose estimation. Here is a link to the OpenCV docs if you want to read more: [link to docs](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html)
 
 ## Estimating Pose
 
-Because the 3D points of the corners are known, and the camera matrix is known, we can solve for the extrinsic camera parameters (the translation and rotation). For the sake of brevity, I wont show how to load the camera parameters from json. Just know that they need to be converted into a numpy array to be fed into OpenCV. We will be using OpenCV's built-in solvePNP method. The OpenCV documentation page is great at explaining the problem and the different solvers provided: https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html
+Because the 3D points of the corners are known, and the camera matrix is known, we can solve for the extrinsic camera parameters (the translation and rotation). For the sake of brevity, I wont show how to load the camera parameters from json. Just know that they need to be converted into a numpy array to be fed into OpenCV. We will be using OpenCV's built-in solvePNP method. The OpenCV documentation page is great at explaining the problem and the different solvers provided: [docs](https://docs.opencv.org/4.x/d5/d1f/calib3d_solvePnP.html).
 
-We will be using SOLVEPNP_IPPE since we have more than 4 coplanar points. The full code is available [here](https://github.com/pickles976/RobotFriend/blob/main/src/fiducials/src/aruco_tracker.py), I will just include a piece below that has the relevant parts.
+We will be using **SOLVEPNP_IPPE** since we have more than 4 coplanar points. The full code is available [here](https://github.com/pickles976/RobotFriend/blob/main/src/fiducials/src/aruco_tracker.py), I will just include a piece below that has the relevant parts.
 
 ```python
 
@@ -185,15 +188,20 @@ You might have noticed the line where we perform:
 transform = inv(transform)
 ```
 
-SolvePnP does not compute the position of our camera. It computes the extrinsic parameters of our camera. Our camera extrinsic matrix converts a point from world coordinates into camera coordinates. We can write this as:
-$$ T_{w}P_{w}=P_{c} $$
+SolvePnP does not compute the position of our camera. It computes the extrinsic parameters of our camera. Our camera extrinsic matrix converts a point from world coordinates into camera coordinates. 
+
+We can write this as:
+$$ T_{w}P_{w}=P_{c} $$  
+
 Since we want the camera position in world coordinates, we want an equation that transforms from camera coordinates to world coordinates. If we multiply both sides by the inverse of the camera extrinisic matrix we get:
-$$ T^{-1}_{w}T_{w}P_{w}=T^{-1}_{w}P_{c} $$
-$$ P_{w}=T^{-1}_{w}P_{c} $$
+$$ T^{-1}_{w}T_{w}P_{w}=T^{-1}_{w}P_{c} $$  
+$$ P_{w}=T^{-1}_{w}P_{c} $$  
 So the inverse transform of our camera extrinsic matrix maps a point from camera space to world space. Since our camera is its own origin, we can represent its transform by the identity matrix.
-$$ T^{-1}_{w}I=T^{-1}_{w} $$
+$$ T^{-1}_{w}I=T^{-1}_{w} $$  
 So the homogeneous transform matrix representing our camera's transform in world space is just the inverse of the camera extrinsic matrix. The way I think of inverse matrices is that they "undo" what the original matrix did. It makes sense intuitively in this case I think.
 
 If you aren't familiar with Homogeneous Transform Matrices I recommend checking out [chapter 3 of Modern Robotics](http://hades.mech.northwestern.edu/images/7/7f/MR.pdf)
+
+## Congratulations!
 
 Now you have the basic knowledge needed to do pose estimation with fiducials! This is a pretty powerful method since you can use it to track objects or localize your robot with just one camera. If you get stuck or have any questions feel free to email me at sebaslogo@gmail.com and I will try to get back to you quickly!
