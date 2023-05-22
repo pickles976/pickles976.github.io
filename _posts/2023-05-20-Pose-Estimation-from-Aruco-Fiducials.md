@@ -133,6 +133,8 @@ def findArucoMarkers(self, img, markerSize = 5, totalMarkers=250, draw=True):
 
 This function will return the bounding boxes and ID's of fiducials detected in the images. If draw is set to true, you will see the bounding boxes that are detected. Try taking a picture and running this code on it.
 
+*Helpful Tip: look at the 2D coordinates of the bounding box corners. Do they make sense? Do they match the winding order mentioned earlier? Try to think about how the image is being projected onto the image plane.*
+
 In the next step we will use these bounding boxes to perform pose estimation. Here is a link to the OpenCV docs if you want to read more: [link to docs](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html)
 
 ## Estimating Pose
@@ -200,8 +202,10 @@ Since we want the camera position in world coordinates, we want an equation that
 $$ T^{-1}_{w}T_{w}P_{w}=T^{-1}_{w}P_{c} $$  
 $$ P_{w}=T^{-1}_{w}P_{c} $$  
 
-So the inverse transform of our camera extrinsic matrix maps a point from camera space to world space. Since our camera is its own origin, we can represent its transform by the identity matrix.  
-$$ T^{-1}_{w}I=T^{-1}_{w} $$  
+So the inverse transform of our camera extrinsic matrix maps a point from camera space to world space. Since our camera is its own origin, we can represent its transform by the identity matrix. 
+$$ P_{c} = I $$ so we can substitute it in:     
+$$ P_{w}=T^{-1}_{w}I $$   
+$$ P_{w}=T^{-1}_{w} $$  
 So the homogeneous transform matrix representing our camera's transform in world space is just the inverse of the camera extrinsic matrix. The way I think of inverse matrices is that they "undo" what the original matrix did. It makes sense intuitively in this case I think.
 
 ## Congratulations!
