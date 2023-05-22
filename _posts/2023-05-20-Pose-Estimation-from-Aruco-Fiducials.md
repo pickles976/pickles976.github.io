@@ -59,7 +59,7 @@ Here is what my fiducial placement looks like:
 
 ![](/images/aruco_post/fiducials.jpg)
 
-The center-most fiducial is at 0,0,1 in my coordinate system. I created a json that stores the positions and rotations of all of my fiducials. Here is what it looks like for this image:
+The left-most fiducial is at 0,0,1 in my coordinate system. I created a json that stores the positions and rotations of all of my fiducials. Here is what it looks like for this image:
 
 ```json
 {
