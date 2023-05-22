@@ -26,6 +26,8 @@ The first step is going to be "calibrating the camera". Hopefully this image sho
 
 The intrinsic parameters are what we aim to find in this step. The extrinsic matrix describes the rotation and translation that converts a 3D point from world coordinates to camera coordinates. The intrinsic matrix describes a transformation from 3D camera coordinates, into 2D coordinates of the image. 
 
+*Helpful Tip: If you aren't familiar with Homogeneous Transform Matrices I recommend checking out [chapter 3 of Modern Robotics](http://hades.mech.northwestern.edu/images/7/7f/MR.pdf)*
+
 The way to do this is to take a lot of pictures of a 3D object with lots of different known points. Given the orientation of those points relative to each other, we can figure out the position of the 3D object relative to our camera. From there it becomes an optimization problem to figure out the intrinsic camera parameters that map the 3D points to 2D. Using a checkerboard pattern is the easiest way to have the relative spacing and orientation of the 3D points be known.
 
 ![](/images/aruco_post/calibration.jpg)
@@ -45,7 +47,7 @@ Where SQUARE_WIDTH is the measured value from step 2. This gives your camera mat
 6. Run the script on your images. Images with the corners of the checkerboard hilighted will pop up. You want the corner detections to be accurate. You should delete any images that don't have corners detected, or have them detected improperly.
 7. Congratulations! If all things work properly you should see the Camera Matrix and Distortion coefficients. You can save these off to a json and load them later.
 
-*Helpful Tip: Take your calibration images at the same aspect ratio and resolution as the images you will take for localization. I ended up burning myself because I was capturing my calibration images for Raspberry Pi camera without using the video port, but then I was using the video port to stream my images during deployment.*
+*Helpful Tip: Take your calibration images at the same aspect ratio and resolution as the images you will take for localization. I ended up burning myself because I was capturing my calibration images for Raspberry Pi camera without using the video port, but was using the video port to stream my images during deployment.*
 
 ## Placing the Fiducials
 
@@ -69,11 +71,11 @@ The center-most fiducial is at 0,0,1 in my coordinate system. I created a json t
 
 This dictionary will be used to generate another dictionary that holds the coordinates of the corners of our fiducials. This representation will not be used directly by the program, but it is easier to read and edit.
 
-*Helpful Tip: Pick a coordinate system that matches the coordinate system of your robotics program. ROS uses a right-handed coordinate system with Z-up. This often trips me up because I am used to Unity where Y is up and the coordinate system is left-handed. Picking the wrong coordinate system at the outset can really throw things off. In the above image, Z is up, X is coming out of the wall, and Y is along the wall.*
+*Helpful Tip: Pick a coordinate system that matches the coordinate system of your robotics program. ROS uses a right-handed coordinate system with Z-up. This often trips me up because I am used to Unity where Y is up and the coordinate system is left-handed. Picking the wrong coordinate system at the outset can really throw things off. In the above image, Z is up, X is coming out of the wall, and Y is along the wall. It looks like the right-most coordinate system in the image below.*
 
 ![](/images/aruco_post/axes.png)
 
-Lastly, we want to store some representation of our Aruco fiducial corners. This can be done on the fly if you write a function that generates corners from the representation I showed earlier, or you can save it off to JSON. [Here is my Python script saving off corners](https://github.com/pickles976/RobotFriend/blob/main/src/fiducials/util/generate_marker_json.py)
+Lastly, we want to store some representation of our Aruco fiducial corners. This can be done on the fly if you write a function that generates corners from the representation I showed earlier, or you can save it off to JSON. [Here is my Python script saving off corners](https://github.com/pickles976/RobotFriend/blob/main/src/fiducials/util/generate_marker_json.py).
 
 This should output the corner coordinates in a format like this:
 
@@ -190,17 +192,17 @@ transform = inv(transform)
 
 SolvePnP does not compute the position of our camera. It computes the extrinsic parameters of our camera. Our camera extrinsic matrix converts a point from world coordinates into camera coordinates. 
 
-We can write this as:
+We can write this as:  
 $$ T_{w}P_{w}=P_{c} $$  
 
-Since we want the camera position in world coordinates, we want an equation that transforms from camera coordinates to world coordinates. If we multiply both sides by the inverse of the camera extrinisic matrix we get:
+Since we want the camera position in world coordinates, we want an equation that transforms from camera coordinates to world coordinates. If we multiply both sides by the inverse of the camera extrinisic matrix we get:  
+
 $$ T^{-1}_{w}T_{w}P_{w}=T^{-1}_{w}P_{c} $$  
 $$ P_{w}=T^{-1}_{w}P_{c} $$  
-So the inverse transform of our camera extrinsic matrix maps a point from camera space to world space. Since our camera is its own origin, we can represent its transform by the identity matrix.
+
+So the inverse transform of our camera extrinsic matrix maps a point from camera space to world space. Since our camera is its own origin, we can represent its transform by the identity matrix.  
 $$ T^{-1}_{w}I=T^{-1}_{w} $$  
 So the homogeneous transform matrix representing our camera's transform in world space is just the inverse of the camera extrinsic matrix. The way I think of inverse matrices is that they "undo" what the original matrix did. It makes sense intuitively in this case I think.
-
-If you aren't familiar with Homogeneous Transform Matrices I recommend checking out [chapter 3 of Modern Robotics](http://hades.mech.northwestern.edu/images/7/7f/MR.pdf)
 
 ## Congratulations!
 
