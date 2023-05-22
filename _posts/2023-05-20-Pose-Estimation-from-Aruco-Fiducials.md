@@ -69,6 +69,8 @@ The left-most fiducial is at 0,0,1 in my coordinate system. I created a json tha
 }
 ```
 
+The x,y,z values given here are the coordinates of the top-left corner of each fiducial. Also, you will need to account for rotation of the fiducials. These fiducials are on the north wall, which happens to be in the YZ plane. If they were on the southern wall, they would need to be rotated by 180 on the Z-axis.
+
 This dictionary will be used to generate another dictionary that holds the coordinates of the corners of our fiducials. This representation will not be used directly by the program, but it is easier to read and edit. I also use feet as the measurement in this dictionary because I use American "freedom units" since that what comes on my tape measurer. It's easy enough to convert to mm.
 
 *Helpful Tip: Pick a coordinate system that matches the coordinate system of your robotics program. ROS uses a right-handed coordinate system with Z-up. This often trips me up because I am used to Unity where Y is up and the coordinate system is left-handed. Picking the wrong coordinate system at the outset can really throw things off. In the above image, Z is up, X is coming out of the wall, and Y is along the wall. It looks like the right-most coordinate system in the image below.*
