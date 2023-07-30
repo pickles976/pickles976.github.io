@@ -7,17 +7,25 @@ title: Full Stack Footguns
 
 This blog post won't be very interesting to anyone who has been a dev for more than like, a year, but it's helpful for me to document my own progress. Back in March I put together an app called [ai-arena](https://ai-arena.com/#/multiplayer) the idea is that you can write some code in the browser to control units in a RTS-style game, and then upload that code to a server where the code competes 24/7 online for control of a galaxy.  
 
-I got the idea from my AI class in school where we could upload our code to a competitive ladder for extra credit. This project was exclusively a learning exercise for me. I ended up needing to write:
+I got the idea from my AI class in school where we could upload our code to a competitive ladder for extra credit.  
 
-1. [Game Engine](https://github.com/pickles976/ai-arena) in canvas to run my game, which could be imported as an ES6 module
-2. Code sandboxing inside the game engine
-3. [Svelte SPA website](https://github.com/pickles976/ai-arena-app)
-4. In-browser code editor
-5. [Lambda function for user code santization and and testing](https://github.com/pickles976/ai-arena-ladder)
-6. [NodeJS game server for running individual games safely](https://github.com/pickles976/ai-arena-ladder)
-7. [NodeJS Galaxy server for simulating the galactic-scale battles](https://github.com/pickles976/ai-arena-ladder)
-8. [ThreeJS Galaxy for visualization](https://github.com/pickles976/GalaxyThreeJS)
-9. Supabase for handling everything in the backend
+![](/images/fullstack/space-settlers.png)
+A screenshot of "Space Settlers" from CS 4013 at OU
+
+![](/images/fullstack/ai-arena.png)
+Screenshot of my game written for HTML canvas  
+
+This project was exclusively a learning exercise for me. I ended up making:
+
+1. [A Game Engine](https://github.com/pickles976/ai-arena) in canvas to run my game, which could be imported as an ES6 module and run both in a webpage rendered to Canvas, or headless in nodejs for running a simulation
+2. Code sandboxing inside the game engine to prevent user code from manipulating the game, browser, or node process/environment
+3. [A Svelte SPA website](https://github.com/pickles976/ai-arena-app)
+4. An In-browser code editor
+5. [A Lambda function for user code santization and and testing](https://github.com/pickles976/ai-arena-ladder)
+6. [A NodeJS game server for running individual games safely](https://github.com/pickles976/ai-arena-ladder)
+7. [A NodeJS Galaxy server for simulating the galactic-scale battles](https://github.com/pickles976/ai-arena-ladder)
+8. [A ThreeJS Galaxy for visualization](https://github.com/pickles976/GalaxyThreeJS)
+9. A Supabase backend for handling everything database-related  
 
 Looking back on it, there was quite a lot of stuff that I ended up needing to do for this project. But what stands out to me the most are the numerous horrible mistakes I made. So in this blog post I am going to go through all of them, and talk about what I would like to change in the future.
 
@@ -57,6 +65,11 @@ The components should have taken the center stage and been the focus. What are t
 
 There is a lot of ambiguity to the user interaction too. I had a couple of experienced devs try out the website and flat out tell me they had no idea what was going on. This is never a good sign. I should have first made sure that interaction flow made sense and I had states for every possible outcome of a user/networking interaction before I even thought about adding functionality.
 
+Some of the API code is... terrible. A veritable fettucini alfredo of chained async functions. This is partially because of laziness and refusal to write SQL queries, and partially because of laziness and refusal to use await.
+
+![](/images/fullstack/ew.png)
+"WHAT THE F*CK IS THAT" -- R. Lee Ermey
+
 ### How to fix
 
 Focus on the components first. Having components driven by data would have saved me quite a bite of code reuse for things like popup modals and labels. Unfortunately I was only recommended the great book [Refactoring UI](https://www.refactoringui.com/) recently. [Also this](https://devblogs.microsoft.com/oldnewthing/20230725-00/?p=108482). Make sure the components have unit tests and interaction flow that makes sense.  
@@ -75,13 +88,19 @@ If I work on this in the future, which I probably will. The game should be made 
 
 This is already really difficult to do for most games, and is unrealistic for a coding game, but I have been thinking about what makes things engaging for people.  
 
-When coding, it's usually a good idea to see things in isolation. Seeing your ship by itself makes it much easier to understand what's going on. Making a tutorial that introduces you to things one step at a time would be really helpful. Unfortunately the victory conditions and behaviors of the game itself are hardcoded. Separating the logic that checks for game over conditions into the Game Manager class and then providing it with different behaviors would be helpful.  
+1. Immediate feedback. Having a REPL is ideal.
+2. Gentle learning curves. Exposing people to one thing at a time, at their own pace, lets them build mastery of the basics quickly and get the "vocab" of the thing down so they can start building more useful abstractions quickly.
+3. Recursive complexity. There are games like Factorio or Supreme Commander or even Minecraft that let you abstract away things that you once did manually. Instead of killing cows by hand you have a cow factory. You can pipe that cow factory into your furnace and pipe that into your automatic chest sorter, and now the only piece of the pipeline you need to touch is feeding your cows wheat every now and then. Letting players build complex behaviors as a block and then hiding that abstraction away lets them do a lot of really cool things.  
+
+The REPL piece is the only bit of the game that actually works. You still have to hit "compile" which is pretty annoying, but whatever.
+
+To expand on #2, when coding, it's usually a good idea to see things in isolation. Seeing your ship by itself makes it much easier to understand what's going on. Making a tutorial that introduces you to things one step at a time would be really helpful. Unfortunately the victory conditions and behaviors of the game itself are hardcoded. Separating the logic that checks for game over conditions into the Game Manager class and then providing it with different behaviors would be helpful.  
 
 As for the coding itself, using Javascript with a custom API for the game is a bit clunky and excludes a lot of people. It does have the benefit of giving you "real" practice at coding in JS. But let's be real, there are infinite better options for this than my crappy game. I think a Forth would be a good candidate to replace Javascript for a few of reasons. Now-- hear me out.
 
 Reason 1: I want to learn Forth and implement a Forth interpreter in WebAssembly for the browser. It seems like a nice gentle lang dev project for someone like me who is too lazy to implement a full interpreter for a more complex language.
 
-Reason 2: The recursive/stack nature of Forth makes it a lot easier to implement state machines, which is really all that these little NPCs are.
+Reason 2: The recursive/stack nature of Forth makes it a lot easier to implement state machines, which is really all that these little NPCs are. See #3
 
 Reason 3: The basic control flow (or lack thereof) makes it easier for me to build a visual programming system. I think to make things easier for players, it would be nice to provide them with a visual way of programming. Have cards for API calls, cards for basic operations (operations and combinators), and cards for user-defined functions. 
 
@@ -97,7 +116,7 @@ FIND_TARGET takes a flag and breaks it up into even smaller actions. If we want 
 
 PERFORM_ACTION actually executes whatever operation and operands got pushed to the stack.
 
-I think this would be easy to hide under a layer of visual programming from the player. How to actually do that though, I am not sure. 
+I think this would be easy to hide under a layer of visual programming from the player. How to actually do that though, I am not sure. That's all just a pipe dream. 
 
 ## Conclusion
 
