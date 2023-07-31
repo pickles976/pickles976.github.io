@@ -42,7 +42,9 @@ White Trash - Nancy Isenberg
 
 Surely You're Joking Mr. Feynman - Richard Feynman
 
-The Cuckoo's Egg - Clifford Stoll
+The Cuckoo's Egg - Clifford Stoll 
+
+Masters of Doom - David Kushner
 
 ### Textbooks
 

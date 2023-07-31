@@ -37,6 +37,9 @@ The next piece is the "Battle Server". This service just polls the queue for con
 
 The Campaign Service occasionally polls the results channel on the Beanstalk queue for results, then updates the DB with these results. The Beanstalk queue is a great layer between the Campaign and Battle services. The campaign service is heavy on networking requests but low on computational overhead. The battle service is pretty much exclusively computational overhead. Having a queue between them allows for multiple battle services to be spun up and consume from the Beanstalk queue continuously.  
 
+![](/images/fullstack/flowchart.png)
+A diagram for those who hate reading
+
 The problems here lie in the implementation. The logic in the Campaign Service is very convoluted. Between checking the queue, pushing to the queue, and updating the database, there is a lot of looping, stopping and starting, and conditions based on the states of the queue. The state of the Campaign Service is spaghetti'ed all over the place and it's not obvious to me what it should look like at any given point. This kind of logic was easy to write, but absolutely horrible to read and amend.  
   
 Something else I (very foolishly) didn't anticipate at all were network errors. Timeouts, failures to resolve URLs, I had not written handling for any of those sort of errors. This wasn't an issue when I was deploying to DigitalOcean droplets, but on my RaspberryPi on my apartment wifi, almost every API call should have incorporated some sort of timeout error handling with backoff and retry.  
@@ -103,20 +106,6 @@ Reason 1: I want to learn Forth and implement a Forth interpreter in WebAssembly
 Reason 2: The recursive/stack nature of Forth makes it a lot easier to implement state machines, which is really all that these little NPCs are. See #3
 
 Reason 3: The basic control flow (or lack thereof) makes it easier for me to build a visual programming system. I think to make things easier for players, it would be nice to provide them with a visual way of programming. Have cards for API calls, cards for basic operations (operations and combinators), and cards for user-defined functions. 
-
-It's easy to imagine really powerful NPC behaviors defined simply
-
-RUN
-|__
-    CHECK_STATUS FIND_TARGET PERFORM_ACTION
-
-CHECK_STATUS looks at all the relevant information like player health etc and pushes a flag to the stack saying what to do. To look for resources, go back to base and drop of resources, or try to heal itself.  
-
-FIND_TARGET takes a flag and breaks it up into even smaller actions. If we want to recharge our energy is it better to return to base or to go find an energy cell? Is it better to go on the offensive and steal some enemy ship's resources? Or is there a viable asteroid nearby?  
-
-PERFORM_ACTION actually executes whatever operation and operands got pushed to the stack.
-
-I think this would be easy to hide under a layer of visual programming from the player. How to actually do that though, I am not sure. That's all just a pipe dream. 
 
 ## Conclusion
 
