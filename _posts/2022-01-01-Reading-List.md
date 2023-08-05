@@ -84,15 +84,32 @@ Origin of Consciousness - Julian Jaynes
 
 The Sumerian World - Harriet Crawford
 
+The Scheme - Sheldon Whitehouse 
+
 ### Textbooks
 
 Probabilistic Robotics - Thrun
 
-Crafting Interpreters - Nystrom
+Crafting Interpreters - Bob Nystrom
 
 Structure and Interpretation of Computer Programs - Gerald and Julie Sussman
 
 SLAMbook - Xiang Gao
+
+Code Complete - Steve McConnell
+
+Architecture Patterns in Python - Harry Percival
+
+High Performance Python - Micha Gorelick
+
+Mastering GUI Programming with Python - Alan D. Moore
+
+Learning Test-Driven Development: A Polyglot Guide to Writing Uncluttered Code - Saleem Siddiqi
+
+The Pragmatic Programmer - Andrew Hunt
+
+Implementing Domain Driven Design - Vaughn Vernon
+
 
 
 
