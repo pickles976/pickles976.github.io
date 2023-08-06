@@ -96,6 +96,8 @@ Structure and Interpretation of Computer Programs - Gerald and Julie Sussman
 
 SLAMbook - Xiang Gao
 
+Computer Networking, A Top-Down Approach - Jim Kurose, Keith Ross
+
 Code Complete - Steve McConnell
 
 Architecture Patterns in Python - Harry Percival
