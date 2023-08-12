@@ -21,13 +21,13 @@ I had some screenshots on my phone and I remembered them other day. I thought th
 
 The [quadtree implementation itself](https://github.com/pickles976/Foxhole-Map-3D/blob/main/src/utils/quadtree.js) (oh God, I just looked at it, this is horrible and unreadable) is dead simple, but it can be pretty challenging to think through the algorithm and figure out what the program should be doing at a given point. Lots of looping and recursive programs have this issue. At the beginning there were lots of issues that I couldn't be sure if they were occuring in my quadtree implementation, my tiling program I wrote in Python, or an issue with my coordinate system in Three.js
 
-![](/images/quadtree/sus.png)  
+![](/images/quadtree/sus.PNG)  
 A weird issue with offsets
 
-![](/images/quadtree/susso.png)  
+![](/images/quadtree/susso.PNG)  
 A single map region rendering
 
-![](/images/quadtree/woot.png)  
+![](/images/quadtree/woot.PNG)  
 Strange issue with only the the bottom row of tiles being rendered, but at varying LODs
 
 ![](/images/quadtree/map.PNG)  
@@ -36,6 +36,7 @@ Now the whole map is rendering, but also a bunch of "parallel universes"
 The random colors are just for contrast, but I think they look really cool. It looks like some sort of board game or kaleidoscope-- and vaguely reminds me of the way land parcels are laid out in a grid in the US.
 
 ![](/images/quadtree/waltuh.PNG)  
+The developers really did an amazing job with this map. If you look closely you can see that the hexagon in the center is slightly higher than all the rest. I believe this was the first hex they created, and had to fit into the normalized range of the other surrounding tiles, so it was adjusted. 
 
 ![](/images/quadtree/shiny.PNG)
 
