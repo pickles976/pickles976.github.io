@@ -5,7 +5,7 @@ title: Full Stack Footguns
 
 ![](https://what.thedailywtf.com/plugins/nodebb-plugin-emoji/emoji/tdwtf-emoji/footgun-2.png?v=grn1kta83uc)
 
-This blog post won't be very interesting to anyone who has been a dev for more than like, a year, but it's helpful for me to document my own progress. Back in March I put together an app called [ai-arena](https://ai-arena.com/#/multiplayer) the idea is that you can write some code in the browser to control units in a RTS-style game, and then upload that code to a server where the code competes 24/7 online for control of a galaxy.  
+This blog post won't be very interesting to anyone who knows what they are doing, but it's helpful for me to document my own progress. Back in March 2023 I put together an app called [ai-arena](https://ai-arena.com/#/multiplayer) the idea is that you can write some code in the browser to control units in a RTS-style game, and then upload that code to a server where the code competes 24/7 online for control of a galaxy.  
 
 I got the idea from my AI class in school where we could upload our code to a competitive ladder for extra credit.  
 
@@ -31,9 +31,9 @@ Looking back on it, there was quite a lot of stuff that I ended up needing to do
 
 ## The Game Server
 
-The game server is designed pretty decently I think. The first piece is the "Campaign Service" that makes calls to the DB and keeps track of the state of the galaxy, sort of like the world map in the game Civilization. When two players have a conflict, the conditions of the conflict are serialized and sent to a Beanstalk queue.  
+The game server is the backend that runs continuously. The first piece is the "Campaign Service" that makes calls to the DB and keeps track of the state of the galaxy, sort of like the world map in the game Civilization. When two players have a conflict, the conditions of the conflict are serialized and sent to a Beanstalk queue.  
 
-The next piece is the "Battle Server". This service just polls the queue for conflicts, then reserves them while it executes a simulation of a battle. Whoever destroys the enemy base within the allowed timespan wins. If the simulation lasts too long, then the winner is determind based on some heuristic. If a player's code consistently times out or uses up too much memory, they lose by default. The Battle Server posts the results of each battle back to a different channel on the Beanstalk queue.
+The next piece is the "Battle Server". This service just polls the queue for conflicts, then reserves them while it executes a simulation of a battle. Whoever destroys the enemy base within the allowed timespan wins. If the simulation lasts too long, then the winner is determined based on some heuristic. If a player's code consistently times out or uses up too much memory, they lose by default. The Battle Server posts the results of each battle back to a different channel on the Beanstalk queue.
 
 The Campaign Service occasionally polls the results channel on the Beanstalk queue for results, then updates the DB with these results. The Beanstalk queue is a great layer between the Campaign and Battle services. The campaign service is heavy on networking requests but low on computational overhead. The battle service is pretty much exclusively computational overhead. Having a queue between them allows for multiple battle services to be spun up and consume from the Beanstalk queue continuously.  
 
@@ -48,11 +48,26 @@ Lastly, there are a handful of difficult to reproduce errors. Running in Docker 
 
 ### How to fix
 
+#### State
+
+Every iteration of the loop should look something like this:
+```
+    F(S) -> S'
+```
+
+When reading from the game queue it would look like
+
+```
+    F(q, S) -> S'
+```
+
+If we have a nice, centralized state with easy to understand transition functions, the code should be a lot easier to test and maintain. Writing unit tests for the Battle Service and Campaign Service would help me separate the non-networking logic into its own components. 
+
+#### Networking
+
 Implementing a proper service adapter. Currently I just have functions that loosely wrap the Beanstalk and Supabase client libraries. I would add error handling and defined behavior for dealing with connection failures to both of these services. As well as making them async so that they aren't blocking the rest of the application when they hang.
 
-Having some sort of well-defined central state. Instead of having my state be spread out all over the place, I should probably introduce some sort of standardized object to hold everything in one spot. Which leads me to:
-
-Testing! Having a centralized state makes it much easier to write both unit-level tests and regression tests. Writing unit tests for the Battle Service and Campaign Service would help me separate the non-networking logic into its own components. Switching from my hard dependency on the Beanstalkd and Supabase clients to an Adapter layer would let me switch to a dependency-injection model, which would allow me to do mock testing of both services more easily. 
+Switching from my hard dependency on the Beanstalkd and Supabase clients to an Adapter layer would let me switch to a dependency-injection model, which would allow me to do mock testing of both services more easily. 
 
 Third, integration tests. This part I am not really sure how I would go about it. Like I said, it's a bit hard to parse through complex logic like this, but maybe reducing the scale of the galaxy to 10-20 stars instead of several thousand, and then walking through the simulation by hand, and hard-coding those states as my test cases.
 
@@ -85,34 +100,42 @@ Focus on networking LAST. Mock the database or API or whatever. Start with UNIT 
 
 I don't really have much to say about Supabase. I should have deployed a local version of Supabase for testing and development purposes. I was actually working on this but got bored and moved on from the project after a while. Having a docker-compose that runs the supabase container + all my backend services would make it possible to do integration tests with Github actions I think. To support this I should make that adapter layer I mentioned earlier, which would provide methods for some of the specific interactions the Campaign Service requires, like starting a new "War" and populating the new galaxy with a bunch of stars.  
 
+It would also help to write a repository layer that I could use instead of Supabase, for mock testing. 
+
 ## The game itself
 
-If I work on this in the future, which I probably will. The game should be made more user-friendly. I don't mean improving the graphics or the actual mechanics of the game (although those could use some work). I mean making the game so obvious to play that an 8 year-old could sit down and get the hang of it, but a 40 year-old could get so ingrossed in the game that they stay up until 2 am playing it.
+Since finishing this project, I found out about [oort.rs](https://oort.rs) which is a competitive coding game where users write code to control spaceships. It is extremely polished, fast, and safe (thanks to Rust). The game runs in wasm on the browser and the backend.
 
-This is already really difficult to do for most games, and is unrealistic for a coding game, but I have been thinking about what makes things engaging for people.  
+Initially I thought Javascript would be easier for the browser, but it is just too difficult to write and test Javascript for a game like this. It's too easy to write code that doesn't have any errors until the 9000th tick.
 
-1. Immediate feedback. Having a REPL is ideal.
-2. Gentle learning curves. Exposing people to one thing at a time, at their own pace, lets them build mastery of the basics quickly and get the "vocab" of the thing down so they can start building more useful abstractions quickly.
-3. Recursive complexity. There are games like Factorio or Supreme Commander or even Minecraft that let you abstract away things that you once did manually. Instead of killing cows by hand you have a cow factory. You can pipe that cow factory into your furnace and pipe that into your automatic chest sorter, and now the only piece of the pipeline you need to touch is feeding your cows wheat every now and then. Letting players build complex behaviors as a block and then hiding that abstraction away lets them do a lot of really cool things.  
+I'd like to rewrite the entire game in Rust, same as oort. I think I would keep gameplay the same, since there's no way I can compete with the features in Oort. Instead I'd like to add more functionality to the battle map.
 
-The REPL piece is the only bit of the game that actually works. You still have to hit "compile" which is pretty annoying, but whatever.
+In addition to Rust, I think I could leverage a few things to improve the game.
 
-To expand on #2, when coding, it's usually a good idea to see things in isolation. Seeing your ship by itself makes it much easier to understand what's going on. Making a tutorial that introduces you to things one step at a time would be really helpful. Unfortunately the victory conditions and behaviors of the game itself are hardcoded. Separating the logic that checks for game over conditions into the Game Manager class and then providing it with different behaviors would be helpful.  
+1. ECS
+2. Thinking about the state functionally
+3. Decoupling the renderer from the state
 
-As for the coding itself, using Javascript with a custom API for the game is a bit clunky and excludes a lot of people. It does have the benefit of giving you "real" practice at coding in JS. But let's be real, there are infinite better options for this than my crappy game. I think a Forth would be a good candidate to replace Javascript for a few of reasons. Now-- hear me out.
+ECS might be overkill for a simple 2D physics game like this, but the faster I can simulate games on the backend, the more players I can support and the larger galaxies I can run. Right now the whole game server backend is running on a single raspberry pi in my bookshelf. It takes about 15s to simulate a single battle for 4500 ticks, which is only 2.5 minutes of game time for a single battle.
 
-Reason 1: I want to learn Forth and implement a Forth interpreter in WebAssembly for the browser. It seems like a nice gentle lang dev project for someone like me who is too lazy to implement a full interpreter for a more complex language.
+I hope that Rust will increase performance as well, but I don't know if I should really expect performance gains from wasm over the V8 engine.
 
-Reason 2: The recursive/stack nature of Forth makes it a lot easier to implement state machines, which is really all that these little NPCs are. See #3
+As for the game loop, I think it would make sense to have all the arrays for ECS comprise of a single state object that you can serialize and deserialize, pass into a renderer, throw into some function that computes a winner, etc.
 
-Reason 3: The basic control flow (or lack thereof) makes it easier for me to build a visual programming system. I think to make things easier for players, it would be nice to provide them with a visual way of programming. Have cards for API calls, cards for basic operations (operations and combinators), and cards for user-defined functions. 
+The game loop should look like this:
+```
+initalize(Params) -> S
+while not HasWinner(S):
+    update(S) -> S'
+    run_user_code(S') -> S''
+    execute_user_commands(S') -> S'''
+    render(S''')
+```
+
+Rust also gives the huge benefit of static type checking, so it should be really difficult to upload unsafe code to the game server.
 
 ## Conclusion
 
-I was pretty proud of myself when I finished this project after about a month of continuous work, but now looking at it I feel pretty embarrassed. It obviously wasn't a waste of time, I learned quite a bit and most importantly it helped me contextualize a lot of the "programming best practices" stuff that I read afterwards. I can't get the idea of a persistent online galaxy-scale war between code bots out of my head, so I will probably return to this project again at some point in the future, hopefully with this post as a good reference point for me to not make all of the same mistakes again.
+I was pretty proud of myself when I finished this project after about a month of continuous work, but now looking at it I feel pretty embarrassed. It obviously wasn't a waste of time, I learned quite a bit and most importantly it helped me contextualize a lot of the "programming best practices" stuff that I read afterwards. 
 
-
-
-
-
-
+I can't get the idea of a persistent online galaxy-scale war between code bots out of my head, so I will probably return to this project again at some point in the future, hopefully with this post as a good reference point for me to not make all of the same mistakes again.
