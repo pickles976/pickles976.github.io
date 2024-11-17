@@ -3,6 +3,9 @@ layout: post
 title: Hari Recipes
 ---
 
+![](/images/hari/webpage.png)
+
+
 ## [Welcome to The Internet](https://www.youtube.com/watch?v=k1BneeJTDcU)
 
 The internet sucks. I think everyone feels the same level of disgust when going online in 2024 and seeing the enormous volumes of content,
@@ -179,5 +182,4 @@ Shit, I don't know. I guess it will go down.
 
 I claimed that this project was built to solve a real problem. Here is my evidence for that claim:
 
-![](/images/hari/webpage.png)
 ![](/images/hari/cowboy%20candy.jpg)
