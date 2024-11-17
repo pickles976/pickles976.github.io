@@ -21,20 +21,20 @@ This post isn't to complain, it's mostly to advertise an app I built. I hope tha
 
 ## Enough Polemics
 
-[Hari Recipes](https://hari.recipes/) is a web app I built in <80 person-hours of work. It is a simple app that provides quick, (somewhat) accurate semantic search over a database of 338,000 recipes scraped from the internet. It is designed to be self-hosted, or hosted on small virtual machines with little to no configuration. It is also designed to be hackable. Each part of the app, from the code used to crawl the recipe websites, to the code for semantic search, is able to be played with and run in isolation.
+[Hari Recipes](https://hari.recipes/) is a web app I built in <80 person-hours of work. It is a simple app that provides quick, (somewhat) accurate semantic search over a database of 338,000 recipes scraped from the internet. It is designed to be self-hosted, or hosted on small virtual machines with little to no configuration. It is also designed to be hackable (stupidly simple). Each part of the app, from the code used to crawl the recipe websites, to the code for semantic search, is able to be played with and run in isolation.
 
 The goal here is to disentagle *you* dear reader, and anyone else who you know that likes cooking, from every recipe website. Starve the beast by not playing any ads or giving them any traffic. Host it yourself and use it on your wifi, or host it in the cloud or a RaspberryPi and share the link with your mom so she can use it.
 
-[Here is an actual example of me looking for a sweet tea recipe on the internet on my phone.](https://www.youtube.com/shorts/rOXt7HDCn2o)
+[Here is an actual example of me looking for a sweet tea recipe on the internet on my phone.](https://www.youtube.com/shorts/rOXt7HDCn2o)  
 Here's what the networking tab looks like for that page:
 ![](/images/hari/cancer.png)
-Who does this help? What problem does this solve? How many hours of human labor and kilowatt-hours of energy were spent making this shit, which is not only useless, but actively antagonistic to users? *Cancer* is the only word I can think of to describe this. Cells that have forgotten that their original purpose and now just exist to propagate themselves.
+Who does this help? What problem does this solve? How many hours of human labor and kilowatt-hours of energy were spent making this shit, which is not only useless, but actively antagonistic to users? *Cancer* is the only word I can think of to describe this. Cells that have forgotten their original purpose and now just exist to propagate themselves.
 
 [Here is a query for sweet tea on hari.recipes](https://www.youtube.com/shorts/WWUIRSNdpVs)
 
 I am not a smart person. I had to Google what [polemics](https://en.wikipedia.org/wiki/Polemic) meant when I wrote the section heading because I wanted to make sure it meant what I thought it did (I still am not 100% sure if I used it correctly but it's too late to change now). But even the most mediocre developer can solve real problems. I believe hari.recipes is solving a real problem, and it took very little of my time.
 
-The rest of this post is about how I built the project. But the main takeaway I would like for everyone to have is that we can starve the beast even just a little bit at a time. If everyone solves small problems and share those solutions with their friends, maybe we can reclaim a little bit of the "good internet".
+The rest of this post is about how I built the project. But the main takeaway I would like for everyone to have is that we *can* starve the beast, even just a little bit at a time. If everyone solves small problems and share those solutions with their friends, maybe we can reclaim a little bit of the "good internet".
 
 Here are some websites that actually provide value, which I took inspiration from:
 
@@ -44,12 +44,16 @@ Here are some websites that actually provide value, which I took inspiration fro
 
 > Note: 
 >
-> Not all recipe websites are as bad as the one I linked. Some of them are very well-curated and run by well-meaning individuals.
+> Not all recipe websites are as bad as the one I linked. Many of them are very well-curated and run by well-meaning individuals.
 > Practice discretion between content farm recipe websites, and ones like [this](http://www.afghankitchenrecipes.com/)
 
 ### Ideation
 
 Earlier this year I migrated all of my personal notes off of Notion and onto a github repo that uses Obsidian as a markdown renderer. Migrating away from Notion had [some issues which I speculate might be a form of vendor lock-in](https://www.reddit.com/r/Notion/comments/j3r6gl/notion_export_error_with_all_the_zip_files/), but eventually I got it done. I started using Obsidian for note-taking very frequently, and started using it a *lot* for saving recipes.  
+
+> Note:
+> 
+> [Don't trust these people with your stuff](https://www.reddit.com/r/Notion/comments/j3r6gl/comment/ll0vkfv/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button) 
 
 I noticed that manual curation of recipes was actually far superior to just bookmarking them in the browser. I could correct errors in the original recipe, add clarifications, substitutions, etc. I think that the difference is one of ownership. I figured that this pattern of copying down recipes into markdown and saving them locally could be automated, and so the project began.
 
@@ -108,6 +112,7 @@ If a recipe does not have `None` for any of these fields, it will be parsed into
 This project probably would not have been possible 2 years ago. At least, not for a similar amount of effort. A Python library called [SentenceTransformers](https://sbert.net/examples/applications/semantic-search/README.html) lets you run pre-trained BERT models on a corpus of text. Getting search on my recipes is as simple as writing a function to turn `RecipeData` into a string, and then feeding those strings into a model. The resulting tensor is just a list of vector embeddings of each recipe string. Here is what search looks like after the embeddings are generated:
 
 ![](/images/hari/speed_example.png)
+> Why did I use a non-food example query for all of these images?
 
 It takes 45s to load the recipes and full-precision vector embeddings, 4GB RAM to hold it all in-memory, and 790ms to retreive 20 results. This is not ideal performance, but it provides a decent starting point for a self-hosted app.
 
@@ -117,7 +122,7 @@ It takes 45s to load the recipes and full-precision vector embeddings, 4GB RAM t
 
 The first thing we can do is stop storing our recipes in memory. Uncompressed our recipes take up almost 1GB. We can store all the recipes in a dead-simple sqlite table. Column 1 will be the recipe id, column 2 will be a JSON of the dumped Pydantic model.
 
-[The result is less than 100 lines of code](https://github.com/pickles976/HariRecipes/blob/main/src/service/db.py) I am using the [repository pattern](https://www.cosmicpython.com/book/chapter_02_repository.html) to abstract away the details of the data storage. This way users can choose if they want to store their recipes in-memory in json or on-disk in sqlite. All they need to do is switch the class they use.
+[The result is less than 100 lines of code](https://github.com/pickles976/HariRecipes/blob/main/src/service/db.py) I am using the [repository pattern](https://www.cosmicpython.com/book/chapter_02_repository.html) to abstract away the details of the data storage. This way hackers can choose if they want to store their recipes in-memory in json or on-disk in sqlite. All they need to do is switch the class they use.
 
 #### Vector Precision
 
@@ -143,13 +148,13 @@ Our [templates](https://github.com/pickles976/HariRecipes/tree/main/src/service/
 
 ### Deployment
 
-I use [Caddy](https://github.com/caddyserver/caddy) to handle https for me. I am not gonna lie, I have no idea how Caddy works, I copied [this template](https://github.com/GrantBirki/caddy-fastapi/tree/main). As soon as I am done writing this blog post I am going to educate myself about how Caddy works but I just wanted to get this shit hosted.
+I use [Caddy](https://github.com/caddyserver/caddy) to handle https for me. I am not gonna lie, I have no idea how Caddy works, I copied [this template](https://github.com/GrantBirki/caddy-fastapi/tree/main). As soon as I am done writing this blog post I am going to educate myself about how Caddy works but right now I just want to get this shit hosted.
 
 > Note:  
 >
-> Google migrated all of my domains to Squarespace earlier this year. Fine, whatever, this is the state of things in 2024. I initially bought the domain hari-recipes.com on Squarespace, just to keep all my domains in one place. Bad idea.
+> Google migrated all of my domains to Squarespace earlier this year. Fine, whatever, this is the state of tech in 2024. I initially bought the domain hari-recipes.com on Squarespace, just to keep all my domains in one place. Bad idea.
 > Squarespace was [not updating my A record to DNS servers](https://forum.squarespace.com/topic/262606-dns-records-not-updating/). It would not let me [use custom nameservers, so I could configure my records elsewhere](https://forum.squarespace.com/topic/300337-couldn%E2%80%99t-add-nameserver-we-were-not-able-to-add-the-nameserver-please-try-again-if-the-problem-persists-contact-customer-support/) and it would [not let me unlock the domain to move it to another provider](https://www.reddit.com/r/squarespace/comments/1fv2mlt/squarespace_nameservers_are_not_working_and_they/).
-> Basically, screw Google and screw Squarespace for being incompetent. We'll see if Mastercard lets me chargeback for this shit because they are quite literally stealing my money by not allowing me to do anything with the domain I paid for.
+> We'll see if Mastercard lets me chargeback for this shit because they are quite literally stealing my money by not allowing me to do anything with the domain I paid for.
 > hari.recipes cost me $6 on namecheap, and I was able to set up DNS in AWS Route 53 in about 30 seconds. I have no love for Amazon, but at least their services work.
 
 The current app is running on DigitalOcean's $6 VM. I tried the $4 option, but the container and its dependencies was just too large to fit in 10GB of storage.
@@ -164,22 +169,24 @@ So the ratio of `max concurrent users on my desktop` / `max concurrent users on 
 
 We can see that on my PC, the app can handle about 20 RPS before the 95th percentile response time starts to spike. I didn't push it as far as it could go, because really I don't expect many people to use this app, but 300ms resonse is fine for a recipe query.
 
-A query with 250 matches runs in about 0.01-0.02s on my machine. 
+A query with 250 matches runs in about 0.01 to 0.02s on my machine. 
 
 ![](/images/hari/logs.png)
 
-On the VM, the same query runs in 0.04->0.08s, so 4x slower. 
+On the VM, the same query runs in 0.04 to 0.08s, so 4x slower. 
 
-Based off of my load tests, the VM should be able to handle at least 100 concurrent users before response times get up above 300ms, assuming that each of those concurrent users are making query requests once per second. So in reality, a single $6 VM can probably handle significantly more real human users.
+Based off of my load tests, the VM should be able to handle at least 10 (simulated) concurrent users before response times get up above 300ms. Each of those simulated concurrent users are making query requests once per second. So in reality, a single $6 VM can probably handle significantly more real human users.
 
 #### Protecting against bad actors
 
 "What if a bad actor wants to saturate your site with requests?"
 
-Shit, I don't know. I guess it will go down.
+I don't know. I guess it will go down. Please don't spam my server.
 
 ### Results!
 
 I claimed that this project was built to solve a real problem. Here is my evidence for that claim:
 
 ![](/images/hari/cowboy%20candy.jpg)
+
+The problem has been solved, the jalapenos have been candied. There are no frameworks to hop between, I can move on with my life.
