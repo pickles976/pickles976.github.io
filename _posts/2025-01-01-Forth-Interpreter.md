@@ -59,3 +59,44 @@ typedef struct {
 
 3. Indirect threaded bytecode interpreter
 
+```C
+void step(VM *vm, IntStack *data_stack, IntStack *call_stack, SD_Table *sd_table, DD_Table *dd_table) {
+    
+    Instruction ins = vm->code[vm->ip++];
+    switch(ins.type) {
+        case VALUE:
+            push_int_to_stack(data_stack, (int)ins.bytecode.value);
+            break;
+        case FUNC:
+            // call our builtin function
+            ins.bytecode.builtin(data_stack);
+            break;
+        case JUMP:
+            // Push current address to call stack so we dont forget it, and jump the IP to the specified address
+            push_int_to_stack(call_stack, vm->ip);
+            vm->ip = (size_t)ins.bytecode.address;
+            break;
+        case RETURN:
+            int return_int;
+            pop_int_from_stack(call_stack, &return_int);
+            vm->ip = (size_t)return_int;
+            break;
+        default:
+            break;
+    }
+}
+```
+
+```commandline
+Keys: SWAP, *, +, -, ., /, DROP, DUP, 
+> : SQUARE DUP * ;
+VM: [FUNC][FUNC][RETURN]
+> : FOURTH SQUARE SQUARE ;
+VM: [FUNC][FUNC][RETURN][JUMP, 0][JUMP, 0][RETURN]
+> 2
+STACK: [2]
+VM: [FUNC][FUNC][RETURN][JUMP, 0][JUMP, 0][RETURN][VALUE, 2]
+> FOURTH 
+STACK: [16]
+VM: [FUNC][FUNC][RETURN][JUMP, 0][JUMP, 0][RETURN][VALUE, 2][JUMP, 3]
+```
