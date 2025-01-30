@@ -145,12 +145,11 @@ I use [Caddy](https://github.com/caddyserver/caddy) to handle https for me. I am
 > We'll see if Mastercard lets me chargeback for this shit because they are quite literally stealing my money by not allowing me to do anything with the domain I paid for.
 > hari.recipes cost me $6 on namecheap, and I was able to set up DNS in AWS Route 53 in about 30 seconds. I have no love for Amazon, but at least their services work.
 
-The current app is running on DigitalOcean's $6 VM. I tried the $4 option, but the container and its dependencies was just too large to fit in 10GB of storage. Further improvements could be made to the docker image size by changing the base image, 
-and tweaking some of the Python dependencies.
+The current app is running on DigitalOcean's $6 VM. I tried the $4 option, but 512MB of RAM was just not enough to build all of the Python dependencies.
 
 ### Load Tests
 
-Thanks to all of our optimization and the simplicity of our app, we should be able to serve a pretty decent number of concurrent users on a small VM. I ran load tests using [Locust](https://locust.io/) on my PC. I figure that the relationship between performance on my desktop and the cloud VM should be a linear one, directly related to the query duration. 
+Thanks to all of our optimization and the simplicity of our app, we should be able to serve a pretty decent number of concurrent users on a small VM. I ran load tests using [Locust](https://locust.io/) on my PC. I figure that the relationship between performance on my desktop and the cloud VM should be a linear one. 
 
 So the ratio of `max concurrent users on my desktop` / `max concurrent users on the VM`, should be the same as `query duration on my desktop` / `query duration on the VM`
 
