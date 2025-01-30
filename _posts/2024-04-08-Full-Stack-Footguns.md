@@ -86,7 +86,6 @@ There is a lot of ambiguity to the user interaction too. I had a couple of exper
 Some of the API code is... terrible. A veritable fettucini alfredo of chained async functions. This is partially because of laziness and refusal to write SQL queries, and partially because of laziness and refusal to use await.
 
 ![](/images/fullstack/ew.png)
-"WHAT THE F*CK IS THAT" -- R. Lee Ermey
 
 ### How to fix
 

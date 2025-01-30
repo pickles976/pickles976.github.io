@@ -40,7 +40,7 @@ The developers really did an amazing job with this map. If you look closely you 
 
 ![](/images/quadtree/shiny.PNG)
 
-I took this image because I thought the specular reflection on the glossy water looked really cool in contrast to the softly-shaded and squishy-looking land. Something about this style of render is really peaceful. The shading I used here is basing [Phong shading](https://en.wikipedia.org/wiki/Phong_shading) named after [Bui Tuong Phong](https://en.wikipedia.org/wiki/Bui_Tuong_Phong) who you should read about. His story is tragic, but his work still lives on. He seemed like a cool guy
+I took this image because I thought the specular reflection on the glossy water looked really cool in contrast to the softly-shaded and squishy-looking land. Something about this style of render is really peaceful.
 
 The mesh is generated from a heightmap that someone extracted from the game. The heightmap and texture are just served from a URL, using github as a CDN and organizing the tiles in folders. This is how slippy tiles work for mapbox or Google maps. When a node in the quadtree is active, it uses the xyz position to request a texture and heightmap file from a URL, and uses that to generate a textured mesh at a given offset. Pretty simple.
 

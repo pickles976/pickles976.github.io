@@ -11,17 +11,9 @@ title: Hari Recipes
 The internet sucks. I think everyone feels the same level of disgust when going online in 2024 and seeing the enormous volumes of content,
 most of which is garbage, inaccessible, inconvenient, or locked behind walled gardens.
 
-The modern internet is an "ecosystem" in the same way that a landfill is an ecosystem. We are like seagulls, picking through mountains of trash looking for slivers of useful information, while around us, bulldozers are piling up even more trash the whole time.
+The modern internet is an "ecosystem" in the same way that a landfill is an ecosystem. We are like seagulls, picking through mountains of trash looking for slivers of useful information, while around us, bulldozers are piling up even more trash the whole time. My hope is to build things that are the opposite-- useful and simple.
 
-The top-down solution to this problem (architected by the minds who are largely responsible for the problem in the first place) is to build an army of robotic seagulls (LLMs) who will pick through the garbage for us-- for a fee of course. Oh and the robotic seagulls are so resource-intensive to build that we will have to miss our climate targets in order to sustain the army of robotic seagulls we need to search through the trash heap, which, again, is of our own creation.
-
-The analogy is getting kind of stretched, but you see what I mean. The internet is garbage, thanks to LLMs, SEO, and advertising. The solution offered to us is LLMs that scrape through the filth and decay to bring us back information ([which may or may not be true](https://www.theverge.com/2024/5/23/24162896/google-ai-overview-hallucinations-glue-in-pizza)).
-
-This post isn't to complain, it's mostly to advertise an app I built. I hope that it can be a small case study for how to disentangle areas of our lives from the shitty internet.
-
-## Enough Polemics
-
-[Hari Recipes](https://hari.recipes/) is a web app I built in <80 person-hours of work. It is a simple app that provides quick, (somewhat) accurate semantic search over a database of 338,000 recipes scraped from the internet. It is designed to be self-hosted, or hosted on small virtual machines with little to no configuration. It is also designed to be hackable (stupidly simple). Each part of the app, from the code used to crawl the recipe websites, to the code for semantic search, is able to be played with and run in isolation.
+[Hari Recipes](https://hari.recipes/) is a web app I built in <80 person-hours of work. It is a simple app that provides quick, (somewhat) accurate semantic search over a database of 300,000 recipes scraped from the internet. It is designed to be self-hosted, or hosted on small virtual machines with little to no configuration. It is also designed to be hackable (stupidly simple). Each part of the app, from the code used to crawl the recipe websites, to the code for semantic search, is able to be played with and run in isolation.
 
 The goal here is to disentagle *you* dear reader, and anyone else who you know that likes cooking, from every recipe website. Starve the beast by not playing any ads or giving them any traffic. Host it yourself and use it on your wifi, or host it in the cloud or a RaspberryPi and share the link with your mom so she can use it.
 
@@ -32,7 +24,7 @@ Who does this help? What problem does this solve? How many hours of human labor 
 
 [Here is a query for sweet tea on hari.recipes](https://www.youtube.com/shorts/WWUIRSNdpVs)
 
-I am not a smart person. I had to Google what [polemics](https://en.wikipedia.org/wiki/Polemic) meant when I wrote the section heading because I wanted to make sure it meant what I thought it did (I still am not 100% sure if I used it correctly but it's too late to change now). But even the most mediocre developer can solve real problems. I believe hari.recipes is solving a real problem, and it took very little of my time.
+I am not a very clever person. But even the most mediocre developer can solve real problems. I believe hari.recipes is solving a real problem, and it took very little of my time to make.
 
 The rest of this post is about how I built the project. But the main takeaway I would like for everyone to have is that we *can* starve the beast, even just a little bit at a time. If everyone solves small problems and share those solutions with their friends, maybe we can reclaim a little bit of the "good internet".
 
@@ -40,7 +32,7 @@ Here are some websites that actually provide value, which I took inspiration fro
 
 [Round House Overalls](https://www.round-house.com/collections/round-house-made-in-usa-bib-overalls)  
 [RockAuto](https://www.rockauto.com/)  
-[McMaster Carr](https://www.mcmaster.com/)  
+[Maestro Spanish](https://maestrospanish.com/)  
 
 > Note: 
 >
@@ -90,10 +82,6 @@ Once all of the recipe urls are saved into a file called `all_recipes.csv` we ca
 
 The initial data is really bad. Out of ~500k recipes, only ~340k will be useful. 
 
-> Note:   
-> 
-> Even after cleanup I have found that many recipes have instructions or ingredients lists of length 0. Because an empty list is not `None` I let a lot of bad data into the final dataset. This is something I need to fix in a future update. I believe the root cause is an issue with the recipe scrapers library, but I won't look a gift horse in the mouth.
-
 The simplest type of cleanup we can do is determine the minimum amount of information required for a recipe to be valid. I settled on:
 - title
 - source url
@@ -102,10 +90,10 @@ The simplest type of cleanup we can do is determine the minimum amount of inform
 
 If a recipe does not have `None` for any of these fields, it will be parsed into a Pydantic model and move on to the curated dataset.
 
-> Note:  
-> 
-> There is a lot of junk in the dataset as well. Once I got the data searchable I tried out some queries of different terms like "Bitcoin" and, well...
+There is a lot of junk in the dataset as well. Once I got the data searchable I tried out some queries of different terms like "Bitcoin" and, well...  
 ![](/images/hari/bitcoin.png)
+
+To determine if a recipe was spam or not, I ran an LLM locally using LM Studio. I have never tried self-hosting LLMs, but I was amazed by how easy it was to run a local inference server. I used `hermes-3-llama-3.1-8b` which fit on my RTX 3070 and runs at about 0.5s/inference. It took about 48 hours to process every single recipe, using 14.4kWh, equivalent to ~1 gallon of gasoline worth of CO2.
 
 ### Vector Search
 
@@ -157,7 +145,8 @@ I use [Caddy](https://github.com/caddyserver/caddy) to handle https for me. I am
 > We'll see if Mastercard lets me chargeback for this shit because they are quite literally stealing my money by not allowing me to do anything with the domain I paid for.
 > hari.recipes cost me $6 on namecheap, and I was able to set up DNS in AWS Route 53 in about 30 seconds. I have no love for Amazon, but at least their services work.
 
-The current app is running on DigitalOcean's $6 VM. I tried the $4 option, but the container and its dependencies was just too large to fit in 10GB of storage.
+The current app is running on DigitalOcean's $6 VM. I tried the $4 option, but the container and its dependencies was just too large to fit in 10GB of storage. Further improvements could be made to the docker image size by changing the base image, 
+and tweaking some of the Python dependencies.
 
 ### Load Tests
 
@@ -176,12 +165,6 @@ A query with 250 matches runs in about 0.01 to 0.02s on my machine.
 On the VM, the same query runs in 0.04 to 0.08s, so 4x slower. 
 
 Based off of my load tests, the VM should be able to handle at least 10 (simulated) concurrent users before response times get up above 300ms. Each of those simulated concurrent users are making query requests once per second. So in reality, a single $6 VM can probably handle significantly more real human users.
-
-#### Protecting against bad actors
-
-"What if a bad actor wants to saturate your site with requests?"
-
-I don't know. I guess it will go down. Please don't spam my server.
 
 ### Results!
 
